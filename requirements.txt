@@ -1,0 +1,8 @@
+cffi==1.14.0
+cryptography==2.9
+pycparser==2.20
+ruamel.yaml==0.16.10
+ruamel.yaml.clib==0.2.0
+six==1.14.0
+vext==0.7.3
+vext.pyqt5==0.7.0
