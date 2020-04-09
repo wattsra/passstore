@@ -1,6 +1,15 @@
 from PyQt5 import QtCore, QtWidgets
 import sys
 
+'''
+ToDO:
+Design and Implement GUI:
+Save new password
+Load services stored in table
+Load specific password
+load all passwords for specific service
+'''
+
 class Controller:
     def __init__(self):
         pass
@@ -36,7 +45,7 @@ class StartMenu(QtWidgets.QWidget):
         self.switch_window.emit()
 
     def load_passwords(self):
-        ## Load all passwords here
+        ## Load all passwords here to display
 
 
 
@@ -59,10 +68,12 @@ class SavePasswordMenu(QtWidgets.QWidget):
     switch_window = QtCore.pyqtSignal()
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
-
+        ## Implement Save Password Gui here.
 
     def
 
+
+##Initial at gui below. to be implemented in QT
 
 # def starting_window():
 #     layout = QVBoxLayout()
