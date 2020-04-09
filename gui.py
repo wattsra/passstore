@@ -1,4 +1,7 @@
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QPixmap
+from passhandler import *
+from databaseinterface import *
 import sys
 
 '''
@@ -10,6 +13,11 @@ Load specific password
 load all passwords for specific service
 '''
 
+
+# temp variables
+database = r"pass-store2.db"
+
+
 class Controller:
     def __init__(self):
         pass
@@ -17,6 +25,7 @@ class Controller:
         self.startmenu = StartMenu()
         #self.startmenu.switch_window.connect(self.show_username)
         self.startmenu.switch_window.connect(self.close_startmenu)
+        self.startmenu.switch_window.connect(self.load_passwords)
         self.startmenu.show()
     def close_startmenu(self):
         self.startmenu.close()
@@ -27,6 +36,10 @@ class Controller:
         #self.nextmenu.switch_window.connect(self.close_startmenu)
         self.nextmenu.show()
 
+    def load_passwords(self):
+        self.loadpasswords = LoadPasswords()
+        self.loadpasswords.show()
+
 
 class StartMenu(QtWidgets.QWidget):
     switch_window = QtCore.pyqtSignal()
@@ -34,9 +47,15 @@ class StartMenu(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self)
         self.setWindowTitle("Robbie's Password Manager")
         layout = QtWidgets.QGridLayout()
+        self.image = QtWidgets.QLabel(self)
+        self.pixmap = QPixmap('source.gif')
+        self.image.setPixmap(self.pixmap)
+        layout.addWidget(self.image)
         self.label = QtWidgets.QLabel("\nWelcome to Robbie's easy Password Manager\nWhat would you like to do?:\n")
         self.button = QtWidgets.QPushButton("Save New Password")
         self.button.clicked.connect(self.nextmenu)
+        self.button = QtWidgets.QPushButton("Load Password")
+        self.button.clicked.connect(self.load_passwords)
         layout.addWidget(self.label)
         layout.addWidget(self.button)
         self.setLayout(layout)
@@ -45,10 +64,22 @@ class StartMenu(QtWidgets.QWidget):
         self.switch_window.emit()
 
     def load_passwords(self):
-        ## Load all passwords here to display
+        self.switch_window.emit()
+        ## Load all passwords using databaseinterface.py
 
 
-
+class LoadPasswords(QtWidgets.QWidget):
+    switch_window = QtCore.pyqtSignal()
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self)
+        self.setWindowTitle("Second Menu")
+        layout = QtWidgets.QGridLayout()
+        self.allservices = select_service_table(database)
+        for service in self.allservices:
+            self.serv = '\t'.join(map(str, service))
+            self.labels = QtWidgets.QLabel(self.serv)
+            layout.addWidget(self.labels)
+            self.setLayout(layout)
 
 class NextMenu(QtWidgets.QWidget):
     switch_window = QtCore.pyqtSignal()
@@ -70,7 +101,7 @@ class SavePasswordMenu(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self)
         ## Implement Save Password Gui here.
 
-    def
+    #def
 
 
 ##Initial at gui below. to be implemented in QT
