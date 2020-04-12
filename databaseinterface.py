@@ -127,15 +127,22 @@ def select_service_table(database):
         #create_default_tables(connection)
         try:
             c = connection.cursor()
-            c.execute("SELECT * FROM service")
+            c.execute("SELECT id, name, creation_date FROM service;")
+
         except Error as e:
             print(e)
-        rows = c.fetchall()   ### need to select each item seperately to release hash
+        rows = [tuple(description[0] for description in c.description)]
+        #rows = ''.join(map(str, rows))
+        print(rows)
+        rows = rows + c.fetchall()   ### need to select each item seperately to release hash
+        print(rows)
         return rows
 
 def select_all_service_passwords(database,service_id):
+    print(database)
+    print(service_id)
     connection = create_connection(database)
-    service_passwords_query = """SELECT service_id, service.name, passwords.usernamehash, passwords.passwordhash, passwords.salt, passwords.expiry_date FROM passwords INNER JOIN service ON passwords.service_id = service.id WHERE service.id="""+service_id+""";"""
+    service_passwords_query = """SELECT service_id, service.name, passwords.usernamehash, passwords.passwordhash, passwords.salt, passwords.expiry_date FROM passwords INNER JOIN service ON passwords.service_id = service.id WHERE service.id="""+str(service_id)+""";"""
     with connection:
         #create_default_tables(connection)
         try:
@@ -144,6 +151,7 @@ def select_all_service_passwords(database,service_id):
         except Error as e:
             print(e)
         rows = c.fetchall()   ### need to select each item seperately to release hash
+        #print(rows)
         service_id, service_name, usernamehash, passwordhash, salt, expiry_date = rows[0]
         return service_id, service_name, usernamehash, passwordhash, salt, expiry_date
 

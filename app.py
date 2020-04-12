@@ -25,7 +25,8 @@ def main():
     #     time = input("What time would you like to set for the creation of this service?:\n")
         ### THIS DOESN'T WORK, NEEDS AMENDING TO USE STRPTIME to take in a string and output as a datetime object
     print("creation date/time set = {}.".format(now))
-    service_id = service_creation(database, (service_name, time))
+    #service_id = service_creation(database, (service_name, time))
+    service_id = 4
     ## now getting username and password to store
     salt = os.urandom(16)
     usernamehash = hash(dbpassword,getpass.getpass("Input username to store: ").encode(),salt)
