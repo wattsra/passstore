@@ -17,7 +17,6 @@ def hash(dbpassword,data,salt):
     key = base64.urlsafe_b64encode(kdf.derive(dbpassword)) # Can only use kdf once
     f=Fernet(key)
     encrypted = f.encrypt(data)
-    #print("encrypted message:  "+str(encrypted))
     return encrypted
 
 def dehash(dbpassword,encrypted,salt):
@@ -30,6 +29,11 @@ def dehash(dbpassword,encrypted,salt):
     )
     key = base64.urlsafe_b64encode(kdf.derive(dbpassword))
     f=Fernet(key)
-    decrypted = f.decrypt(encrypted)
-    decrypted_decoded=decrypted.decode()
-    return decrypted_decoded
+    while True:
+        try:
+            decrypted = f.decrypt(encrypted)
+            decrypted_decoded = decrypted.decode()
+            return decrypted_decoded
+        except:
+            incorrect_password = "Different password used to encrypt data"
+            return incorrect_password

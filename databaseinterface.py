@@ -21,7 +21,7 @@ sql_create_passwords_table = """CREATE TABLE IF NOT EXISTS passwords (
 service_row = """ INSERT INTO service (name,creation_date) VALUES(?,?)"""
 password_row = """ INSERT INTO passwords (usernamehash,passwordhash,salt,service_id,creation_date,expiry_date) VALUES(?,?,?,?,?,?)"""
 
-#### TO IMPLEMENT LATER ####
+#### TO IMPLEMENT LATER AS Enhancement to tool ####
 # sql_create_extrainfo_table = """CREATE TABLE IF NOT EXISTS extrainfo (
 #                                 id integer PRIMARY KEY,
 #                                 name_of_data text NOT NULL,
@@ -39,8 +39,6 @@ def create_connection(db_file):
     connection = None
     try:
         connection = sqlite3.connect(db_file)
-        # print(sqlite3.version)
-        #return connection
     except Error as e:
         print(e)
     return connection
@@ -82,11 +80,7 @@ def service_creation(database, service):
     '''
     #create a database connection
     connection = create_connection(database)
-    # create_default_tables(connection)
-    # create_service(connection,service)
-    # close_connection(connection)
     with connection:
-        #service_id = create_service(connection,service)
         create_default_tables(connection)
         try:
             c = connection.cursor()
@@ -94,7 +88,6 @@ def service_creation(database, service):
         except Error as e:
             print(e)
         return c.lastrowid
-    # add code to close connection  """connection.close()"""
 
 def password_creation(database,identity):
     #create a database connection
@@ -107,9 +100,9 @@ def password_creation(database,identity):
         except Error as e:
             print(e)
         return c.lastrowid
-    # add code to close connection  """connection.close()"""
 
 def count_passwords(database,service_id):
+    connection = create_connection(database)
     connection = create_connection(database)
     count_query = """SELECT COUNT (passwords.id) FROM passwords INNER JOIN service ON passwords.service_id = service.id WHERE service.id=""" + str(service_id) + """;"""
     with connection:
@@ -130,49 +123,55 @@ def select_passwords_table(database):
     """
     connection = create_connection(database)
     with connection:
-        #create_default_tables(connection)
         try:
             c = connection.cursor()
             c.execute("SELECT * FROM passwords")
         except Error as e:
             print(e)
-        rows = c.fetchall()   ### need to select each item seperately to release hash
+        rows = c.fetchall()
         return rows
 
 def select_service_table(database):
     connection = create_connection(database)
     with connection:
-        #create_default_tables(connection)
         try:
             c = connection.cursor()
             c.execute("SELECT id, name, creation_date FROM service;")
 
         except Error as e:
             print(e)
-        rows = [tuple(description[0] for description in c.description)]
-        #rows = ''.join(map(str, rows))
-        #print(rows)
-        rows = rows + c.fetchall()   ### need to select each item seperately to release hash
-        #print(rows)
-        return rows
+        if c.description == None:
+            return None
+        else:
+            rows = [tuple(description[0] for description in c.description)]
+            rows = rows + c.fetchall()
+            return rows
 
 def select_all_service_passwords(database,service_id):
-    #print(database)
-    #print(service_id)
     connection = create_connection(database)
     service_passwords_query = """SELECT service_id, service.name, passwords.id, passwords.usernamehash, passwords.passwordhash, passwords.salt, passwords.expiry_date FROM passwords INNER JOIN service ON passwords.service_id = service.id WHERE service.id="""+str(service_id)+""";"""
     with connection:
-        #create_default_tables(connection)
         try:
             c = connection.cursor()
             c.execute(service_passwords_query)
         except Error as e:
             print(e)
-        rows = c.fetchall()   ### need to select each item seperately to release hash
-        #print(rows)
-        #service_id, service_name, usernamehash, passwordhash, salt, expiry_date = rows[0]
+        rows = c.fetchall()
         return rows
-        #return service_id, service_name, usernamehash, passwordhash, salt, expiry_date
+
+def read_service_name(database,service_id):
+    connection = create_connection(database)
+    with connection:
+        try:
+            c = connection.cursor()
+            c.execute("""SELECT name, creation_date FROM service WHERE id="""+str(service_id)+""";""")
+        except Error as e:
+            print(e)
+        if c.description == None:
+            return None
+        else:
+            rows = c.fetchall()[0][0]
+            return rows
 
 if __name__ == '__main__':
     main()

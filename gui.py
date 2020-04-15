@@ -7,19 +7,12 @@ from datetime import datetime, timedelta
 
 '''
 ToDO:
-Design and Implement GUI:
-Save new password
-Load services stored in table
-Load specific password
-load all passwords for specific service
+Enhance GUI to include delete password or Service
 '''
 
 
-# temp variables
-database = r"pass-store2.db"
-service_id = 0
-dbpassword = ""
-#dbpassword = b"1234"
+#variables
+database = r"pass-store.db"
 class Controller:
     def __init__(self):
         global dbpassword
@@ -32,6 +25,7 @@ class Controller:
 
     def service_list(self):
         self.servicelist = ServiceList()
+        self.servicelist.updatelist()
         self.servicelist.switch_to_startmenu.connect(self.start_menu)
         self.servicelist.switch_to_startmenu.connect(self.close_servicelist)
         self.servicelist.switch_to_newpassword.connect(self.new_password)
@@ -69,11 +63,13 @@ class Controller:
         self.servicepasslist = ServicePassList()
         self.servicepasslist.switch_to_startmenu.connect(self.start_menu)
         self.servicepasslist.updatelist()
+        self.servicepasslist.closeservicepasslist.connect(self.close_servicepasslist)
         self.servicepasslist.show()
 
     def database_passwindowsave(self):
         self.databasepasswindowsave = DatabasePassWindowSave()
         self.databasepasswindowsave.close_databasepasswindowsave.connect(self.close_database_passwindowsave)
+        self.databasepasswindowsave.servicepasslist.connect(self.service_list)
         self.databasepasswindowsave.show()
 
     def close_startmenu(self):
@@ -100,6 +96,9 @@ class Controller:
     def close_newpassword(self):
         self.newpassword.close()
 
+    def close_servicepasslist(self):
+        self.servicepasslist.close()
+
 
 
 class StartMenu(QtWidgets.QWidget):
@@ -116,7 +115,7 @@ class StartMenu(QtWidgets.QWidget):
         self.pixmap = QPixmap('source.gif')
         self.image.setPixmap(self.pixmap)
         self.image.setAlignment(QtCore.Qt.AlignCenter)
-        self.label = QtWidgets.QLabel("<br><h1>Welcome to Robbie's easy Password Manager</h1><br>This tool securely salts and hashes usernames and passwords and saves them in an SQL database. <br><br>-------------------<br> <br><b>This has not been completely security checked so I would not recommend you use this for BAU.</b> <br><br>-------------------<br><br>  Click Next to get started! <br>")
+        self.label = QtWidgets.QLabel("""<br><h1>Welcome to Robbie's easy Password Manager</h1><br>This tool securely salts and hashes usernames and passwords and saves them in an SQL database. <br><br>-------------------<br> <br><b>This has not been completely security checked so I would not recommend you use this for BAU.</b> <br><br>-------------------<br><br>Database name: <b><u>"""+str(database)+"""</b></u>    <i>You can change this in "gui.py"   </i><br><br>  Click Next to get started! <br>""")
         self.label.setTextFormat(1)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.button = QtWidgets.QPushButton("Next!")
@@ -142,45 +141,44 @@ class ServiceList(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self)
         self.resize(800,600)
         self.setWindowTitle("Robbie's Password Manager")
+
+    def updatelist(self):
         layout = QtWidgets.QGridLayout()
         self.allservices = select_service_table(database)
-        ##if None in the database then show nothing. "Nothing in database"
-
-        #print(self.allservices)
-        #define widgets items
-        self.headers = self.allservices[0]+("number of passwords saved",)
-        #print(self.headers)
-        rows= self.allservices[1:]
-        for i in range(len(rows)):
-            row = rows[i]
-            service_id = row[0]
-            passwordcount = count_passwords(database,service_id)
-            row = row + tuple(str(passwordcount))
-            rows[i]=row
-        #print(rows)
-        self.model = TableModel(rows, self.headers)
-        self.table = QtWidgets.QTableView()
-        self.table.clicked.connect(self.clickedserviceid)
-        # self.table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        # self.table.resizeColumnToContents(1)
-        self.table.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
-        self.table.setModel(self.model)
-        self.header = self.table.horizontalHeader()
-        self.header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-        layout.addWidget(self.table)
+        if self.allservices == None:
+            self.noservicelabel = QtWidgets.QLabel("There are no services saved in the database yet.<br><br><br> <b><u>Create a service first!</b></u><br><br> Then you can encrypt a username and password for that service")
+            self.noservicelabel.setTextFormat(1)
+            layout.addWidget(self.noservicelabel)
+        else:
+            self.headers = self.allservices[0]+("number of passwords saved",)
+            rows= self.allservices[1:]
+            for i in range(len(rows)):
+                row = rows[i]
+                service_id = row[0]
+                passwordcount = count_passwords(database,service_id)
+                row = row + tuple(str(passwordcount))
+                rows[i]=row
+            self.model = TableModel(rows, self.headers)
+            self.table = QtWidgets.QTableView()
+            self.table.clicked.connect(self.clickedserviceid)
+            self.table.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
+            self.table.setModel(self.model)
+            self.header = self.table.horizontalHeader()
+            self.header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+            layout.addWidget(self.table)
 
         #buttons
-        self.savepasswordbutton = QtWidgets.QPushButton("Save Password to Selected service")
-        self.savepasswordbutton.clicked.connect(self.new_password)
         self.newservicebutton = QtWidgets.QPushButton("Create new Service")
         self.newservicebutton.clicked.connect(self.new_service)
+        self.savepasswordbutton = QtWidgets.QPushButton("Encrypt a Username and Password attached to Selected service")
+        self.savepasswordbutton.clicked.connect(self.new_password)
         self.servicepasslistbutton = QtWidgets.QPushButton("Load Passwords for Selected service")
         self.servicepasslistbutton.clicked.connect(self.service_passlist)
         self.backbutton = QtWidgets.QPushButton("Back")
         self.backbutton.clicked.connect(self.start_menu)
 
-        layout.addWidget(self.savepasswordbutton)
         layout.addWidget(self.newservicebutton)
+        layout.addWidget(self.savepasswordbutton)
         layout.addWidget(self.servicepasslistbutton)
         layout.addWidget(self.backbutton)
         #end buttons
@@ -188,6 +186,7 @@ class ServiceList(QtWidgets.QWidget):
 
     def start_menu(self):
         self.switch_to_startmenu.emit()
+
     def new_password(self):
         global service_id
         if service_id != 0:
@@ -196,6 +195,7 @@ class ServiceList(QtWidgets.QWidget):
 
     def new_service(self):
         self.switch_to_newservice.emit()
+
     def service_passlist(self):
         global service_id
         if service_id != 0:
@@ -206,7 +206,6 @@ class ServiceList(QtWidgets.QWidget):
         global service_id
         row = signal.row()
         service_id = str(signal.sibling(signal.row(),0).data())
-        print(service_id)
         return service_id
 
 class NewPassword(QtWidgets.QWidget):
@@ -221,8 +220,8 @@ class NewPassword(QtWidgets.QWidget):
         layout = QtWidgets.QGridLayout()
 
         # columns required: id, usernamehash, passwordhash, salt, service_id, creation_date, expiry_date
-
-        self.label = QtWidgets.QLabel("\n\nEnter credentials of new password to be stored securely in the database for the service: "+service_id+" : ")
+        self.service_name = read_service_name(database,service_id)
+        self.label = QtWidgets.QLabel("""\n\nEnter credentials of new password to be stored securely in the database for the service: \n" """+self.service_name+""" ": """)
         self.userlabel = QtWidgets.QLabel("Username")
         self.username = QtWidgets.QLineEdit()
         self.passlabel = QtWidgets.QLabel("Password")
@@ -232,7 +231,7 @@ class NewPassword(QtWidgets.QWidget):
         self.datelabel = QtWidgets.QLabel("Service will be created with the following date/time:\nCreation time: "+now+"\nExpiry date/time: "+expiry_time)
 
 
-        self.createpasswordbutton = QtWidgets.QPushButton("Create Service in database")
+        self.createpasswordbutton = QtWidgets.QPushButton("Encrpyt Username and Password in database")
         self.createpasswordbutton.clicked.connect(self.create_password)
         self.backbutton = QtWidgets.QPushButton("Back")
         self.backbutton.clicked.connect(self.back_button)
@@ -297,7 +296,7 @@ class NewService(QtWidgets.QWidget):
         service = [new_service_name,self.now]
         global service_id
         service_id = service_creation(database,service)
-        print("Service created with service_id = "+str(service_id))
+
         self.new_service_confirmation.emit()
         self.switch_to_servicewindow.emit()
 
@@ -308,11 +307,15 @@ class DatabasePassWindowSave(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self)
         self.setWindowTitle("Please Enter Database Password")
         layout = QtWidgets.QGridLayout()
-        self.label = QtWidgets.QLabel("\n\nEnter Database Password to get access:\n\n")
+        self.label = QtWidgets.QLabel("<br><br>Enter Database Password to get access:<br><br>")
+        self.label.setTextFormat(1)
         layout.addWidget(self.label)
         self.password = QtWidgets.QLineEdit()
         self.password.setEchoMode(2)
         layout.addWidget(self.password)
+        self.warninglabel = QtWidgets.QLabel("<h1>DO NOT FORGET THIS PASSWORD or your passwords cannot be unencrypted</h1>")
+        self.warninglabel.setTextFormat(1)
+        layout.addWidget(self.warninglabel)
         self.submitbutton = QtWidgets.QPushButton("Submit")
         self.submitbutton.clicked.connect(self.submit_button)
         self.cancelbutton = QtWidgets.QPushButton("Cancel")
@@ -386,27 +389,23 @@ class NewServiceConfirmation(QtWidgets.QWidget):
 
 class ServicePassList (QtWidgets.QWidget):
     switch_to_startmenu = QtCore.pyqtSignal()
+    closeservicepasslist = QtCore.pyqtSignal()
 
     def __init__(self,):
         global dbpassword
         QtWidgets.QWidget.__init__(self)
         if type(dbpassword) != bytes:
             dbpassword = dbpassword.encode('utf-8')
-        #print(self.dbpassword)
         self.resize(600,300)
         self.setWindowTitle("Service Password List")
-        #self.layout = QtWidgets.QGridLayout()
-        #self.setLayout(self.layout)
+
 
     def updatelist(self):
         global dbpassword
         self.layout = QtWidgets.QGridLayout()
         if type(dbpassword) != bytes:
             dbpassword= dbpassword.encode('utf-8')
-        #self.listtable = QtWidgets.QListWidget()
         rows= select_all_service_passwords(database,service_id)
-        print(rows)
-        print(type(rows))
         for i in range(len(rows)):
             row = rows[i]
             self.serv_id, self.serv_name, self.pass_id, self.usernamehash, self.passwordhash, self.salt, self.expiry_date = row
@@ -423,9 +422,14 @@ class ServicePassList (QtWidgets.QWidget):
         self.table.setModel(self.model)
         self.table.horizontalHeader()
         self.layout.addWidget(self.table)
-        #self.layout.addWidget(self.listtable)
+        self.backbutton = QtWidgets.QPushButton("Back to start")
+        self.backbutton.clicked.connect(self.back_button)
+        self.layout.addWidget(self.backbutton)
         self.setLayout(self.layout)
 
+    def back_button(self):
+        self.switch_to_startmenu.emit()
+        self.closeservicepasslist.emit()
 
     def viewClicked(self, clickedIndex):
         row = clickedIndex.row()

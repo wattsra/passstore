@@ -86,7 +86,7 @@
           <port value="1234" />
           <database value="database" />
           <files>
-            <file path="$PROJECT_DIR$/pass-store.db" schema="main" />
+            <file path="$PROJECT_DIR$/pass-store3.db" schema="main" />
           </files>
           <type value="NONE" />
           <user value="" />
