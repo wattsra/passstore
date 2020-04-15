@@ -74,6 +74,12 @@ def create_table(connection,create_table_sql):
         print(e)
 
 def service_creation(database, service):
+    '''
+
+    :param database:
+    :param service: list with two variables (service name and isoformat datetime for creation)
+    :return:
+    '''
     #create a database connection
     connection = create_connection(database)
     # create_default_tables(connection)
@@ -102,6 +108,18 @@ def password_creation(database,identity):
             print(e)
         return c.lastrowid
     # add code to close connection  """connection.close()"""
+
+def count_passwords(database,service_id):
+    connection = create_connection(database)
+    count_query = """SELECT COUNT (passwords.id) FROM passwords INNER JOIN service ON passwords.service_id = service.id WHERE service.id=""" + str(service_id) + """;"""
+    with connection:
+        try:
+            c= connection.cursor()
+            count = c.execute(count_query)
+            count = count.fetchone()[0]
+        except Error as e:
+            print(e)
+        return count
 
 
 def select_passwords_table(database):
@@ -133,16 +151,16 @@ def select_service_table(database):
             print(e)
         rows = [tuple(description[0] for description in c.description)]
         #rows = ''.join(map(str, rows))
-        print(rows)
+        #print(rows)
         rows = rows + c.fetchall()   ### need to select each item seperately to release hash
-        print(rows)
+        #print(rows)
         return rows
 
 def select_all_service_passwords(database,service_id):
-    print(database)
-    print(service_id)
+    #print(database)
+    #print(service_id)
     connection = create_connection(database)
-    service_passwords_query = """SELECT service_id, service.name, passwords.usernamehash, passwords.passwordhash, passwords.salt, passwords.expiry_date FROM passwords INNER JOIN service ON passwords.service_id = service.id WHERE service.id="""+str(service_id)+""";"""
+    service_passwords_query = """SELECT service_id, service.name, passwords.id, passwords.usernamehash, passwords.passwordhash, passwords.salt, passwords.expiry_date FROM passwords INNER JOIN service ON passwords.service_id = service.id WHERE service.id="""+str(service_id)+""";"""
     with connection:
         #create_default_tables(connection)
         try:
@@ -152,8 +170,9 @@ def select_all_service_passwords(database,service_id):
             print(e)
         rows = c.fetchall()   ### need to select each item seperately to release hash
         #print(rows)
-        service_id, service_name, usernamehash, passwordhash, salt, expiry_date = rows[0]
-        return service_id, service_name, usernamehash, passwordhash, salt, expiry_date
+        #service_id, service_name, usernamehash, passwordhash, salt, expiry_date = rows[0]
+        return rows
+        #return service_id, service_name, usernamehash, passwordhash, salt, expiry_date
 
 if __name__ == '__main__':
     main()
