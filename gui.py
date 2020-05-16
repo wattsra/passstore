@@ -112,7 +112,7 @@ class StartMenu(QtWidgets.QWidget):
         #self.layout.setAlignment(alignment = QtCore.Qt.AlignCenter)
         #define widgets items
         self.image = QtWidgets.QLabel(self)
-        self.pixmap = QPixmap('source.gif')
+        self.pixmap = QPixmap('source.png').scaledToWidth(100)
         self.image.setPixmap(self.pixmap)
         self.image.setAlignment(QtCore.Qt.AlignCenter)
         self.label = QtWidgets.QLabel("""<br><h1>Welcome to Robbie's easy Password Manager</h1><br>This tool securely salts and hashes usernames and passwords and saves them in an SQL database. <br><br>-------------------<br> <br><b>This has not been completely security checked so I would not recommend you use this for BAU.</b> <br><br>-------------------<br><br>Database name: <b><u>"""+str(database)+"""</b></u>    <i>You can change this in "gui.py"   </i><br><br>  Click Next to get started! <br>""")
@@ -121,8 +121,8 @@ class StartMenu(QtWidgets.QWidget):
         self.button = QtWidgets.QPushButton("Next!")
         self.button.clicked.connect(self.service_list)
         #add widgets to layout
-        layout.addWidget(self.image)
         layout.addWidget(self.label)
+        layout.addWidget(self.image)
         layout.addWidget(self.button)
 
         self.setLayout(layout)
