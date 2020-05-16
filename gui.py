@@ -313,7 +313,7 @@ class DatabasePassWindowSave(QtWidgets.QWidget):
         self.password = QtWidgets.QLineEdit()
         self.password.setEchoMode(2)
         layout.addWidget(self.password)
-        self.warninglabel = QtWidgets.QLabel("<h1>DO NOT FORGET THIS PASSWORD or your passwords cannot be unencrypted</h1>")
+        self.warninglabel = QtWidgets.QLabel("<h3>DO NOT FORGET THIS PASSWORD or your passwords cannot be unencrypted</h3>")
         self.warninglabel.setTextFormat(1)
         layout.addWidget(self.warninglabel)
         self.submitbutton = QtWidgets.QPushButton("Submit")
